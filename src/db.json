@@ -1,0 +1,555 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "name": "Dark Chocolate Truffle123",
+      "description": "Rich dark chocolate with a smooth creamy ganache center.",
+      "price": 2562,
+      "count": 10,
+      "category": "Premium",
+      "images": [
+        "/images/chocolate1.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-11-12T04:44:07.361Z",
+      "updated_at": "2025-11-14T11:42:05.157Z"
+    },
+    {
+      "id": "2",
+      "name": "Hazelnut Milk Chocolate",
+      "description": "Smooth milk chocolate blended with roasted hazelnuts for a nutty flavor.",
+      "price": 2200,
+      "count": 15,
+      "category": "Premium",
+      "images": [
+        "/images/chocolate2.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-24T09:30:00Z"
+    },
+    {
+      "id": "3",
+      "name": "White Chocolate Raspberry",
+      "description": "Creamy white chocolate infused with a hint of raspberry sweetness.",
+      "price": 2265,
+      "count": 8,
+      "category": "Premium",
+      "images": [
+        "/images/chocolate3.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-11-12T06:08:50.922Z"
+    },
+    {
+      "id": "4",
+      "name": "Almond Crunch Chocolate",
+      "description": "Crunchy roasted almonds coated in silky milk chocolate.",
+      "price": 3180,
+      "count": 20,
+      "category": "Premium",
+      "images": [
+        "/images/chocolate4.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-22T18:45:00Z"
+    },
+    {
+      "id": "5",
+      "name": "Caramel Chocolate Delight",
+      "description": "Smooth milk chocolate filled with rich caramel sauce.",
+      "price": 4230,
+      "count": 12,
+      "category": "Premium",
+      "images": [
+        "/images/chocolate_5.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-21T14:30:00Z"
+    },
+    {
+      "id": "6",
+      "name": "Mint Chocolate Chip",
+      "description": "Refreshing mint-infused dark chocolate with chocolate chips.",
+      "price": 2210,
+      "count": 18,
+      "category": "Premium",
+      "images": [
+        "/images/chocolate_6.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-20T11:15:00Z"
+    },
+    {
+      "id": "7",
+      "name": "Orange Zest Chocolate",
+      "description": "Tangy orange zest blended into creamy white chocolate.",
+      "price": 1240,
+      "count": 9,
+      "category": "Premium",
+      "images": [
+        "/images/chocolate_7.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-19T16:00:00Z"
+    },
+    {
+      "id": "8",
+      "name": "Coconut Paradise Chocolate",
+      "description": "Exotic coconut-flavored chocolate with a tropical paradise taste.",
+      "price": 2200,
+      "count": 12,
+      "category": "Premium",
+      "images": [
+        "/images/chocolate_8.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-18T13:45:00Z"
+    },
+    {
+      "id": "9",
+      "name": "Ras Malai",
+      "description": "Soft cheese dumplings soaked in sweetened cardamom-flavored milk.",
+      "price": 1150,
+      "count": 20,
+      "category": "Sweets",
+      "images": [
+        "/images/sweets_1.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-17T12:00:00Z"
+    },
+    {
+      "id": "10",
+      "name": "Gulab Jamun",
+      "description": "Warm milk dumplings soaked in rose-flavored syrup.",
+      "price": 1200,
+      "count": 25,
+      "category": "Sweets",
+      "images": [
+        "/images/sweets_2.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-16T11:30:00Z"
+    },
+    {
+      "id": "11",
+      "name": "Jalebi",
+      "description": "Crispy deep-fried spirals soaked in saffron syrup.",
+      "price": 1120,
+      "count": 30,
+      "category": "Sweets",
+      "images": [
+        "/images/sweets_3.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-15T10:15:00Z"
+    },
+    {
+      "id": "12",
+      "name": "Barfi",
+      "description": "Sweet condensed milk fudge with nuts and flavors.",
+      "price": 2180,
+      "count": 15,
+      "category": "Sweets",
+      "images": [
+        "/images/sweets_4.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-14T09:45:00Z"
+    },
+    {
+      "id": "13",
+      "name": "Ladoo",
+      "description": "Round balls made from flour, sugar, and ghee.",
+      "price": 1100,
+      "count": 40,
+      "category": "Sweets",
+      "images": [
+        "/images/sweets_5.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-13T08:20:00Z"
+    },
+    {
+      "id": "14",
+      "name": "Rasgulla",
+      "description": "Spongy cheese balls in light syrup.",
+      "price": 4160,
+      "count": 18,
+      "category": "Sweets",
+      "images": [
+        "/images/sweets_6.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-12T07:10:00Z"
+    },
+    {
+      "id": "15",
+      "name": "Kheer",
+      "description": "Rice pudding with nuts and cardamom.",
+      "price": 1140,
+      "count": 22,
+      "category": "Sweets",
+      "images": [
+        "/images/sweets_7.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-11T06:00:00Z"
+    },
+    {
+      "id": "16",
+      "name": "Halwa",
+      "description": "Sweet semolina pudding with ghee and nuts.",
+      "price": 1170,
+      "count": 16,
+      "category": "Sweets",
+      "images": [
+        "/images/sweets_8.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-10T05:30:00Z"
+    },
+    {
+      "id": "17",
+      "name": "Almonds",
+      "description": "Premium quality almonds, rich in nutrients and perfect for snacking.",
+      "price": 3500,
+      "count": 50,
+      "category": "Nuts",
+      "images": [
+        "/images/nuts_1.webp"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-09T04:00:00Z"
+    },
+    {
+      "id": "18",
+      "name": "Cashews",
+      "description": "Creamy and crunchy cashews, ideal for healthy eating.",
+      "price": 2500,
+      "count": 40,
+      "category": "Nuts",
+      "images": [
+        "/images/nuts_2.webp"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-08T03:00:00Z"
+    },
+    {
+      "id": "19",
+      "name": "Walnuts",
+      "description": "Nutritious walnuts with a rich, earthy flavor.",
+      "price": 2800,
+      "count": 35,
+      "category": "Nuts",
+      "images": [
+        "/images/nuts_3.webp"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-07T02:00:00Z"
+    },
+    {
+      "id": "20",
+      "name": "Pistachios",
+      "description": "Delicious pistachios, perfect for a healthy snack.",
+      "price": 3200,
+      "count": 30,
+      "category": "Nuts",
+      "images": [
+        "/images/nuts_4.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-06T01:00:00Z"
+    },
+    {
+      "id": "21",
+      "name": "Peanuts",
+      "description": "Roasted peanuts, crunchy and flavorful.",
+      "price": 2800,
+      "count": 60,
+      "category": "Nuts",
+      "images": [
+        "/images/nuts_5.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-05T00:00:00Z"
+    },
+    {
+      "id": "22",
+      "name": "Hazelnuts",
+      "description": "Smooth and tasty hazelnuts, great for baking.",
+      "price": 1900,
+      "count": 25,
+      "category": "Nuts",
+      "images": [
+        "/images/nuts_6.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-04T23:00:00Z"
+    },
+    {
+      "id": "23",
+      "name": "Macadamia Nuts",
+      "description": "Buttery macadamia nuts with a unique flavor.",
+      "price": 2500,
+      "count": 20,
+      "category": "Nuts",
+      "images": [
+        "/images/nuts_7.webp"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-03T22:00:00Z"
+    },
+    {
+      "id": "24",
+      "name": "Brazil Nuts",
+      "description": "Rich and creamy Brazil nuts, packed with selenium.",
+      "price": 2300,
+      "count": 15,
+      "category": "Nuts",
+      "images": [
+        "/images/nuts_8.jpg"
+      ],
+      "isActive": true,
+      "created_at": "2025-10-02T21:00:00Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "8cdd",
+      "name": "Afrah",
+      "email": "afrahkabeer@gmail.com",
+      "password": "@123@123",
+      "role": "user",
+      "isBlock": false,
+      "cart": [],
+      "orders": [
+        {
+          "date": "2025-11-05T04:36:21.163Z",
+          "total": "1150.00",
+          "status": "success",
+          "items": [
+            {
+              "id": "9",
+              "name": "Ras Malai",
+              "price": 1150,
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "date": "2025-11-05T04:37:46.458Z",
+          "total": "2200.00",
+          "status": "success",
+          "items": [
+            {
+              "id": "2",
+              "name": "Hazelnut Milk Chocolate",
+              "price": 2200,
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "date": "2025-11-12T09:34:12.920Z",
+          "total": "4450.00",
+          "status": "success",
+          "items": [
+            {
+              "id": "1",
+              "name": "Dark Chocolate Truffle",
+              "price": 2250,
+              "qty": 1
+            },
+            {
+              "id": "2",
+              "name": "Hazelnut Milk Chocolate",
+              "price": 2200,
+              "qty": 1
+            }
+          ]
+        }
+      ],
+      "wishlist": [],
+      "created_at": "2025-10-26T12:19:08.724Z",
+      "address": {
+        "street": "edappal",
+        "city": "malappuram",
+        "state": "kerala",
+        "zip": "676318",
+        "country": "india"
+      }
+    },
+    {
+      "id": "3205",
+      "name": "Afrah",
+      "email": "afrahkabeer321@gmail.com",
+      "password": "@123123",
+      "role": "user",
+      "isBlock": false,
+      "cart": [],
+      "orders": [
+        {
+          "date": "2025-11-07T03:49:44.114Z",
+          "total": "2250.00",
+          "status": "success",
+          "items": [
+            {
+              "id": "1",
+              "name": "Dark Chocolate Truffle",
+              "price": 2250,
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "date": "2025-11-12T07:52:03.445Z",
+          "total": "2200.00",
+          "status": "success",
+          "items": [
+            {
+              "id": "2",
+              "name": "Hazelnut Milk Chocolate",
+              "price": 2200,
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "date": "2025-11-12T08:45:22.223Z",
+          "total": "2265.00",
+          "status": "success",
+          "items": [
+            {
+              "id": "3",
+              "name": "White Chocolate Raspberry",
+              "price": 2265,
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "date": "2025-11-12T08:53:27.543Z",
+          "total": "2200.00",
+          "status": "success",
+          "items": [
+            {
+              "id": "2",
+              "name": "Hazelnut Milk Chocolate",
+              "price": 2200,
+              "qty": 1
+            }
+          ]
+        }
+      ],
+      "wishlist": [
+        {
+          "id": "9",
+          "name": "Ras Malai",
+          "description": "Soft cheese dumplings soaked in sweetened cardamom-flavored milk.",
+          "price": 2150,
+          "count": 20,
+          "category": "Sweets",
+          "images": [
+            "/images/sweets_1.jpg"
+          ],
+          "isActive": true,
+          "created_at": "2025-10-17T12:00:00Z"
+        },
+        {
+          "id": "18",
+          "name": "Cashews",
+          "description": "Creamy and crunchy cashews, ideal for healthy eating.",
+          "price": 6500,
+          "count": 40,
+          "category": "Nuts",
+          "images": [
+            "/images/nuts_2.webp"
+          ],
+          "isActive": true,
+          "created_at": "2025-10-08T03:00:00Z"
+        }
+      ],
+      "created_at": "2025-10-26T14:09:47.755Z"
+    },
+    {
+      "id": "f454",
+      "username": "testuser",
+      "password": "test123",
+      "email": "test@example.com",
+      "role": "user",
+      "isBlock": false,
+      "cart": [],
+      "wishlist": [],
+      "orders": [],
+      "created_at": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "ab48",
+      "username": "admin",
+      "password": "admin123",
+      "email": "admin@example.com",
+      "role": "admin",
+      "isBlock": false,
+      "cart": [],
+      "wishlist": [
+        {
+          "id": "2",
+          "name": "Hazelnut Milk Chocolate",
+          "description": "Smooth milk chocolate blended with roasted hazelnuts for a nutty flavor.",
+          "price": 2200,
+          "count": 15,
+          "category": "Premium",
+          "images": [
+            "/images/chocolate2.jpg"
+          ],
+          "isActive": true,
+          "created_at": "2025-10-24T09:30:00Z"
+        }
+      ],
+      "orders": [
+        {
+          "date": "2025-11-13T13:46:08.933Z",
+          "total": "2250.00",
+          "status": "success",
+          "items": [
+            {
+              "id": "1",
+              "name": "Dark Chocolate Truffle123",
+              "price": 2250,
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "date": "2025-11-15T06:24:22.573Z",
+          "total": "2562.00",
+          "status": "success",
+          "items": [
+            {
+              "id": "1",
+              "name": "Dark Chocolate Truffle123",
+              "price": 2562,
+              "qty": 1
+            }
+          ]
+        }
+      ],
+      "address": {
+        "street": "edappal",
+        "city": "malappuram",
+        "state": "kerala",
+        "zip": "679576",
+        "country": "INDIA"
+      }
+    },
+    {
+      "id": "814c",
+      "username": "admin",
+      "password": "admin123",
+      "email": "admin@example.com",
+      "role": "admin",
+      "isBlock": false
+    }
+  ]
+}
