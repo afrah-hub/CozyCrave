@@ -2,16 +2,17 @@ import React from "react";
 import { ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip,CartesianGrid,Legend,LineChart,Line,Brush} from "recharts";
 import StatCard from "./StatCard";
 
-function DashboardOverview({ users, products, orders, setActiveTab }) {
+function DashboardOverview({ users, products, orders, stats, setActiveTab }) {
   const totalOrders = orders.length;
-  const totalRevenue = orders.reduce((s, o) => s + Number(o.total || 0), 0);
+  const totalRevenue = stats?.totalRevenue ?? orders.reduce((s, o) => s + Number(o.total || o.Total || 0), 0);
+  const totalPurchased = stats?.totalProductsPurchased ?? 0;
 
   const byMonth = {};
   orders.forEach((o) => {
-    const d = new Date(o.date || o.created_at || Date.now());
+    const d = new Date(o.createdAt || o.CreatedAt || o.date || Date.now());
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     byMonth[key] = byMonth[key] || { revenue: 0, orders: 0 };
-    byMonth[key].revenue += Number(o.total || 0);
+    byMonth[key].revenue += Number(o.total || o.Total || 0);
     byMonth[key].orders += 1;
   });
   const months = Object.keys(byMonth).sort();
@@ -33,7 +34,7 @@ function DashboardOverview({ users, products, orders, setActiveTab }) {
             </div>
       <div className="grid grid-stats">
         <StatCard title="Users" value={users.length} onClick={() => setActiveTab("users")} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} />
-        <StatCard title="Products" value={products.length} onClick={() => setActiveTab("products")} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} />
+        <StatCard title="Products" value={`${products.length} (Sold: ${totalPurchased})`} onClick={() => setActiveTab("products")} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} />
         <StatCard title="Orders" value={totalOrders} onClick={() => setActiveTab("orders")} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>} />
         <StatCard title="Revenue (₹)" value={`₹${totalRevenue.toFixed(2)}`} icon={<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-currency-rupee" viewBox="0 0 16 16">
   <path d="M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z"/>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { AppContext } from "../context/AppContext";
 import "./AdminDashboard.css";
@@ -9,8 +10,9 @@ import UserManagement from "../components/admin/UserManagement";
 import ProductManagement from "../components/admin/ProductManagement";
 import OrderManagement from "../components/admin/OrderManagement";
 import Toast from "../components/admin/Toast";
+import { apiClient } from "../services/api";
+import LogoutConfirmModal from "../components/LogoutConfirmModal";
 
-const API_BASE = "http://localhost:3001";
 const HEADER_HEIGHT = 64;
 
 export default function AdminDashboard() {
@@ -19,25 +21,36 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [stats, setStats] = useState({ totalRevenue: 0, totalProductsPurchased: 0 });
   const [activeTab, setActiveTab] = useState("dashboard");
   const [toast, setToast] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   useEffect(() => {
     let cancelled = false;
     async function fetchData() {
       setLoading(true);
       try {
-        const [uRes, pRes] = await Promise.all([
-          axios.get(`${API_BASE}/users`),
-          axios.get(`${API_BASE}/products`),
+        const [uRes, pRes, oRes, revRes, countRes] = await Promise.all([
+          apiClient.get(`/api/admin/users`),
+          apiClient.get(`/api/Product/admin`),
+          apiClient.get(`/api/admin/orders`),
+          apiClient.get(`/api/admin/stats/total-revenue`),
+          apiClient.get(`/api/admin/stats/total-products-purchased`),
         ]);
+        
         if (cancelled) return;
-        setUsers(uRes.data || []);
-        setProducts(pRes.data || []);
-        const allOrders = (uRes.data || []).flatMap((u) => u.orders || []);
-        setOrders(allOrders);
+
+        setUsers(uRes.data?.data || []);
+        setProducts(pRes.data?.data || []);
+        setOrders(oRes.data?.data || []);
+        setStats({
+          totalRevenue: revRes.data?.data?.totalRevenue || 0,
+          totalProductsPurchased: countRes.data?.data?.totalProductsPurchased || 0
+        });
+        
       } catch (err) {
         console.error("Admin fetch error:", err);
-        setToast({ type: "error", message: "Failed to load admin data" });
+        setToast({ type: "error", message: "Failed to load admin data: " + (err.response?.data?.message || err.message) });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -58,8 +71,8 @@ export default function AdminDashboard() {
 
   const toggleUserBlock = async (userId, currentlyBlocked) => {
     try {
-      await axios.patch(`${API_BASE}/users/${userId}`, { isBlock: !currentlyBlocked });
-      setUsers((u) => u.map((x) => (x.id === userId ? { ...x, isBlock: !currentlyBlocked } : x)));
+      await apiClient.patch(`/api/admin/users/${userId}/block`);
+      setUsers((u) => u.map((x) => (x.id === userId ? { ...x, isBlocked: !currentlyBlocked } : x)));
       showToast(currentlyBlocked ? "User unblocked" : "User blocked");
     } catch (err) {
       console.error(err);
@@ -93,16 +106,20 @@ export default function AdminDashboard() {
           </div>
 
           <div className="header-actions">
+            <Link to="/" className="btn-home" title="Go to Home">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </Link>
+
             <div className="greeting" aria-hidden>
               <div className="greet-line">Hi, <span className="greet-name">{user?.name || user?.username || "Admin"}</span></div>
             </div>
 
             <button
               className="btn-logout"
-              onClick={() => {
-                if (typeof logout === "function") logout();
-                else window.location.reload();
-              }}
+              onClick={() => setShowLogoutModal(true)}
             >
               Logout
             </button>
@@ -176,7 +193,7 @@ export default function AdminDashboard() {
 
         <main className="main-content">
           {activeTab === "dashboard" && (
-            <DashboardOverview users={users} products={products} orders={orders} setActiveTab={setActiveTab} />
+            <DashboardOverview users={users} products={products} orders={orders} stats={stats} setActiveTab={setActiveTab} />
           )}
 
           {activeTab === "users" && (
@@ -188,13 +205,22 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "orders" && (
-            <OrderManagement orders={orders} users={users} products={products} />
+            <OrderManagement orders={orders} users={users} products={products} setOrders={setOrders} showToast={showToast} />
           )}
         </main>
       </div>
 
 
       <Toast toast={toast} onClose={closeToast} />
+      <LogoutConfirmModal 
+        isOpen={showLogoutModal} 
+        onConfirm={() => {
+          setShowLogoutModal(false);
+          if (typeof logout === "function") logout();
+          else window.location.reload();
+        }} 
+        onCancel={() => setShowLogoutModal(false)} 
+      />
     </div>
   );
 }

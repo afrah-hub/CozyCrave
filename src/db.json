@@ -6,7 +6,7 @@
       "description": "Rich dark chocolate with a smooth creamy ganache center.",
       "price": 2562,
       "count": 10,
-      "category": "Premium",
+      "category": "Chocolate",
       "images": [
         "/images/chocolate1.jpg"
       ],
@@ -20,7 +20,7 @@
       "description": "Smooth milk chocolate blended with roasted hazelnuts for a nutty flavor.",
       "price": 2200,
       "count": 15,
-      "category": "Premium",
+      "category": "Chocolate",
       "images": [
         "/images/chocolate2.jpg"
       ],
@@ -33,7 +33,7 @@
       "description": "Creamy white chocolate infused with a hint of raspberry sweetness.",
       "price": 2265,
       "count": 8,
-      "category": "Premium",
+      "category": "Chocolate",
       "images": [
         "/images/chocolate3.jpg"
       ],
@@ -46,7 +46,7 @@
       "description": "Crunchy roasted almonds coated in silky milk chocolate.",
       "price": 3180,
       "count": 20,
-      "category": "Premium",
+      "category": "Chocolate",
       "images": [
         "/images/chocolate4.jpg"
       ],
@@ -59,7 +59,7 @@
       "description": "Smooth milk chocolate filled with rich caramel sauce.",
       "price": 4230,
       "count": 12,
-      "category": "Premium",
+      "category": "Chocolate",
       "images": [
         "/images/chocolate_5.jpg"
       ],
@@ -72,7 +72,7 @@
       "description": "Refreshing mint-infused dark chocolate with chocolate chips.",
       "price": 2210,
       "count": 18,
-      "category": "Premium",
+      "category": "Chocolate",
       "images": [
         "/images/chocolate_6.jpg"
       ],
@@ -85,7 +85,7 @@
       "description": "Tangy orange zest blended into creamy white chocolate.",
       "price": 1240,
       "count": 9,
-      "category": "Premium",
+      "category": "Chocolate",
       "images": [
         "/images/chocolate_7.jpg"
       ],
@@ -98,7 +98,7 @@
       "description": "Exotic coconut-flavored chocolate with a tropical paradise taste.",
       "price": 2200,
       "count": 12,
-      "category": "Premium",
+      "category": "Chocolate",
       "images": [
         "/images/chocolate_8.jpg"
       ],
@@ -278,14 +278,15 @@
       "id": "22",
       "name": "Hazelnuts",
       "description": "Smooth and tasty hazelnuts, great for baking.",
-      "price": 1900,
+      "price": 5500,
       "count": 25,
       "category": "Nuts",
       "images": [
         "/images/nuts_6.jpg"
       ],
       "isActive": true,
-      "created_at": "2025-10-04T23:00:00Z"
+      "created_at": "2025-10-04T23:00:00Z",
+      "updated_at": "2025-12-04T10:16:52.309Z"
     },
     {
       "id": "23",
@@ -481,8 +482,35 @@
       "isBlock": false,
       "cart": [],
       "wishlist": [],
-      "orders": [],
-      "created_at": "2025-01-01T00:00:00Z"
+      "orders": [
+        {
+          "date": "2025-11-19T04:31:44.808Z",
+          "total": "4762.00",
+          "status": "success",
+          "items": [
+            {
+              "id": "2",
+              "name": "Hazelnut Milk Chocolate",
+              "price": 2200,
+              "qty": 1
+            },
+            {
+              "id": "1",
+              "name": "Dark Chocolate Truffle123",
+              "price": 2562,
+              "qty": 1
+            }
+          ]
+        }
+      ],
+      "created_at": "2025-01-01T00:00:00Z",
+      "address": {
+        "street": "edappal",
+        "city": "malappuram",
+        "state": "kerala",
+        "zip": "679576",
+        "country": "INDIA"
+      }
     },
     {
       "id": "ab48",
@@ -499,7 +527,7 @@
           "description": "Smooth milk chocolate blended with roasted hazelnuts for a nutty flavor.",
           "price": 2200,
           "count": 15,
-          "category": "Premium",
+          "category": "Chocolate",
           "images": [
             "/images/chocolate2.jpg"
           ],
@@ -550,6 +578,29 @@
       "email": "admin@example.com",
       "role": "admin",
       "isBlock": false
+    },
+    {
+      "id": "5c41",
+      "username": "badusha",
+      "password": "badusha123",
+      "email": "badushafbi@gmail.com",
+      "cart": [],
+      "wishlist": [],
+      "orders": [],
+      "address": {
+        "street": "edappal",
+        "city": "malappuram",
+        "state": "kerala",
+        "zip": "679576",
+        "country": "INDIA"
+      }
+    },
+    {
+      "id": "ad7f",
+      "username": "user",
+      "password": "321321",
+      "email": "statusborn@gmail.com",
+      "wishlist": []
     }
   ]
 }

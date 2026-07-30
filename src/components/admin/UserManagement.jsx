@@ -26,15 +26,15 @@ function UserManagement({ users, toggleUserBlock }) {
                   <td>{u.email}</td>
                   <td>{u.role || "user"}</td>
                   <td>
-                    <span className={`badge-status ${u.isBlock ? "blocked" : "active"}`}>{u.isBlock ? "Blocked" : "Active"}</span>
+                    <span className={`badge-status ${u.isBlocked ? "blocked" : "active"}`}>{u.isBlocked ? "Blocked" : "Active"}</span>
                   </td>
                   <td>
                     <div className="row-actions">
                       <button
-                        className={`btn small ${u.isBlock ? "btn-success" : "btn-danger"}`}
-                        onClick={() => toggleUserBlock(u.id, u.isBlock)}
-                        aria-pressed={u.isBlock}>
-                        {u.isBlock ? "Unblock" : "Block"}
+                        className={`btn small ${u.isBlocked ? "btn-success" : "btn-danger"}`}
+                        onClick={() => toggleUserBlock(u.id, u.isBlocked)}
+                        aria-pressed={u.isBlocked}>
+                        {u.isBlocked ? "Unblock" : "Block"}
                       </button>
                     </div>
                   </td>

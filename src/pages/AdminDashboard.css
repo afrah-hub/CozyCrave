@@ -13,7 +13,7 @@
   --radius: 16px;
   --header-h: 64px;
   --sidebar-w: 260px;
-  --max-w: 1200px;
+  --max-w: 1600px;
 
   --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   --fw-regular: 500;
@@ -111,6 +111,44 @@ body{
 .greeting{ padding:0 8px; }
 .greet-line{ font-size:13px; color:var(--muted); }
 .greet-name{ font-weight:var(--fw-medium); color:var(--text); }
+
+.btn-home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 10px;
+  color: var(--brand);
+  background: transparent;
+  border: 1px solid rgba(160, 82, 45, 0.1);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-home:hover {
+  background: rgba(160, 82, 45, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(160, 82, 45, 0.1);
+}
+
+.btn-home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 10px;
+  color: var(--brand);
+  background: transparent;
+  border: 1px solid rgba(160, 82, 45, 0.1);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-home:hover {
+  background: rgba(160, 82, 45, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(160, 82, 45, 0.1);
+}
 
 .btn-logout{
   background: linear-gradient(180deg,var(--accent),var(--accent-600));
@@ -315,12 +353,13 @@ body{
 
 .toast{
   position:fixed;
-  right:18px;
-  top:calc(var(--header-h) + 18px);
+  right:24px;
+  top:calc(var(--header-h) + 40px);
   z-index:1600;
   min-width:260px;
   max-width:360px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.9));
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
   border-radius:12px;
   box-shadow: 0 12px 36px rgba(2,6,23,0.14);
   border: 1px solid rgba(15,23,42,0.06);
@@ -331,7 +370,7 @@ body{
   transform: translateX(12px);
   animation: toastIn .36s cubic-bezier(.2,.9,.2,1);
 }
-.toast-success{ border-left:4px solid var(--success); }
+.toast-success{ border-left:4px solid var(--primary); }
 .toast-error{ border-left:4px solid var(--danger); }
 @keyframes toastIn{
   from{ opacity:0; transform: translateX(18px) scale(.98); }

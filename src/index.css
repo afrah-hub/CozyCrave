@@ -2428,22 +2428,24 @@ textarea:focus {
 
 .notifications-container {
   position: fixed;
-  top: 20px;
+  top: 80px;
   right: 20px;
   z-index: 10000;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   max-width: 400px;
 }
 
 .notification {
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: var(--text);
-  padding: 16px 20px;
+  padding: 14px 20px;
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   cursor: pointer;
   transition: var(--transition);
   animation: slideInRight 0.3s ease-out;
@@ -2458,13 +2460,13 @@ textarea:focus {
 }
 
 .notification-success {
-  border-left: 4px solid var(--success);
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+  border-left: 4px solid var(--primary);
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.1), rgba(160, 82, 45, 0.05));
 }
 
 .notification-error {
   border-left: 4px solid var(--danger);
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(139, 69, 19, 0.04));
 }
 
 .notification-warning {

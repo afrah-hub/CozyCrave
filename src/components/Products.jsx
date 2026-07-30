@@ -19,7 +19,7 @@ function Products() {
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [quickViewProduct, setQuickViewProduct] = useState(null);
-  
+
   const isInWishlist = (productId) => {
     return wishlist.some(item => item.id === productId);
   };
@@ -72,7 +72,7 @@ function Products() {
   }, [products, selectedCategory, searchQuery, priceRange]);
 
   if (error) return <p>{error}</p>;
-  const categories = ['All', 'Premium', 'Sweets', 'Nuts'];
+  const categories = ['All', 'Chocolate', 'Sweets', 'Nuts'];
 
   const renderProducts = (category) => {
     const categoryProducts = filteredProducts.filter(p => p.category === category);
@@ -82,7 +82,7 @@ function Products() {
     return categoryProducts.map((product) => (
       <article key={product.id} className='product-card' aria-labelledby={`${category.toLowerCase()}-${product.id}`}>
         <Link to={`/product/${product.id}`} aria-label={`View ${product.name}`} className="product-thumb-link" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <img src={product.images && product.images[0] ? product.images[0] : '/images/placeholder.jpg'} alt={product.name} className='product-image' onError={(e)=>{ e.currentTarget.onerror=null; e.currentTarget.src='/images/placeholder.jpg';}} />
+          <img src={product.images && product.images[0] ? product.images[0] : '/images/placeholder.jpg'} alt={product.name} className='product-image' onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/placeholder.jpg'; }} />
         </Link>
         <Link to={`/product/${product.id}`} id={`${category.toLowerCase()}-${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
           <h3>{product.name}</h3>
@@ -114,7 +114,7 @@ function Products() {
             title={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
           >
             <svg width='18' height='18' viewBox='0 0 24 24' fill={isInWishlist(product.id) ? 'red' : 'black'} aria-hidden="true">
-              <path d='M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z'/>
+              <path d='M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z' />
             </svg>
           </button>
           <button className='btn secondary' style={{ fontSize: '12px', padding: '6px 12px', width: '60px' }} onClick={() => setQuickViewProduct(product)}>Quick View</button>
@@ -126,7 +126,7 @@ function Products() {
   return (
     <>
       <section id='products' className='container'>
-        
+
 
         <div className='products-layout'>
           <aside className='filters-sidebar'>
@@ -134,7 +134,7 @@ function Products() {
               <div className='filter-group'>
                 <label className='filter-label'>
                   <svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
-                    <path d='M3 7h18M3 12h18M3 17h18'/>
+                    <path d='M3 7h18M3 12h18M3 17h18' />
                   </svg>
                   Category
                 </label>
@@ -154,8 +154,8 @@ function Products() {
               <div className='filter-group'>
                 <label className='filter-label'>
                   <svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
-                    <circle cx='12' cy='12' r='3'/>
-                    <path d='M12 1v6m0 6v6m11-7h-6m-6 0H1'/>
+                    <circle cx='12' cy='12' r='3' />
+                    <path d='M12 1v6m0 6v6m11-7h-6m-6 0H1' />
                   </svg>
                   Price Range
                 </label>
@@ -219,7 +219,7 @@ function Products() {
           </aside>
 
           <main className='products-main' style={{ position: 'relative' }}>
-            {(selectedCategory === 'All' || selectedCategory === 'Premium') && (
+            {(selectedCategory === 'All' || selectedCategory === 'Chocolate') && (
               <section className='product-section'>
                 <h1
                   style={{
@@ -235,16 +235,16 @@ function Products() {
                   }}
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
-                  onClick={() => setSelectedCategory('Premium')}
+                  onClick={() => setSelectedCategory('Chocolate')}
                 >
-                  <svg width='24' height='24' viewBox='0 0 24 24' fill='currentColor' style={{color: '#FFD700'}}>
-                    <path d='M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z'/>
+                  <svg width='24' height='24' viewBox='0 0 24 24' fill='currentColor' style={{ color: '#FFD700' }}>
+                    <path d='M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z' />
                   </svg>
                   Premium Collections
                 </h1>
                 <h3>Premium Chocolates</h3>
                 <div className='products-grid' aria-live="polite">
-                  {renderProducts('Premium')}
+                  {renderProducts('Chocolate')}
                 </div>
               </section>
             )}
@@ -267,8 +267,8 @@ function Products() {
                   onMouseLeave={() => setSweetsHovered(false)}
                   onClick={() => setSelectedCategory('Sweets')}
                 >
-                  <svg width='24' height='24' viewBox='0 0 24 24' fill='currentColor' style={{color: '#FFD700'}}>
-                    <path d='M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z'/>
+                  <svg width='24' height='24' viewBox='0 0 24 24' fill='currentColor' style={{ color: '#FFD700' }}>
+                    <path d='M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z' />
                   </svg>
                   Traditional Sweets
                 </h1>
@@ -297,8 +297,8 @@ function Products() {
                   onMouseLeave={() => setNutsHovered(false)}
                   onClick={() => setSelectedCategory('Nuts')}
                 >
-                  <svg width='24' height='24' viewBox='0 0 24 24' fill='currentColor' style={{color: '#FFD700'}}>
-                    <path d='M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z'/>
+                  <svg width='24' height='24' viewBox='0 0 24 24' fill='currentColor' style={{ color: '#FFD700' }}>
+                    <path d='M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z' />
                   </svg>
                   Nutritious Nuts Collection
                 </h1>
@@ -340,6 +340,6 @@ function Products() {
     </>
   );
 }
-    
+
 
 export default Products;

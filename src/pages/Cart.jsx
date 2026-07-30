@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
+import "./CartWishlist.css";
 
 function Cart() {
   const { cart, updateCartQty, removeFromCart } = useContext(AppContext);
@@ -23,7 +24,7 @@ function Cart() {
 
   const handleRemove = (productId) => {
     setAnimatingItems(prev => new Set(prev).add(productId));
-    setTimeout(() => removeFromCart(productId), 150);
+    setTimeout(() => removeFromCart(productId), 300);
   };
 
   const clearCart = () => {
@@ -32,70 +33,115 @@ function Cart() {
     });
     setTimeout(() => {
       validCart.forEach(item => removeFromCart(item.product.id));
-    }, 150);
+    }, 300);
   };
 
   return (
-    <main className="cart-page container">
-      <h2>Your Shopping Cart</h2>
+    <div className="cart-wishlist-container">
+      <h1 className="modern-title animate-fade-in">Your Shopping Cart</h1>
+      
       {validCart.length === 0 ? (
-        <div className="empty-cart">
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}></div>
-          <p>Your cart is empty.</p>
-          <p className="muted">Add some delicious treats to get started!</p>
-          <Link to="/products" className="btn" style={{ marginTop: '1rem' }}>
-            Browse Products
-          </Link>
-        </div>
-      ) : (
-        <>
-          <div className="cart-list">
-            {validCart.map((item, index) => (
-              <div key={`cart-item-${index}`} className={`cart-item ${animatingItems.has(item.product.id) ? 'animating' : ''}`}>
-                <img src={item.product.images && item.product.images[0] ? item.product.images[0] : '/images/placeholder.jpg'} alt={item.product.name} className="cart-image" onError={(e)=>{ e.currentTarget.onerror=null; e.currentTarget.src='/images/placeholder.jpg';}} />
-                <div className="item-details">
-                  <strong>{item.product.name}</strong>
-                  <p className="muted">₹{item.product.price} each</p>
-                  <p className="subtotal">Subtotal: ₹{(item.product.price * item.qty).toFixed(2)}</p>
-                </div>
-                <div className="cart-controls">
-                  <div className="quantity-controls">
-                    <button className="qty-btn" onClick={() => handleQtyChange(item.product.id, item.qty - 1)} disabled={item.qty <= 1}>-</button>
-                    <span className="qty-display">{item.qty}</span>
-                    <button className="qty-btn" onClick={() => handleQtyChange(item.product.id, item.qty + 1)}>+</button>
-                  </div>
-                  <button className="remove-btn" onClick={() => handleRemove(item.product.id)}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
-                    </svg>
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="cart-total">
-            <strong>Total: ₹{total.toFixed(2)}</strong>
-          </div>
-          <div className="checkout-actions">
-            <button className="btn clear-cart-btn" onClick={clearCart}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-              Clear Cart
-            </button>
-            <Link to="/order-placement" className="btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="9" cy="21" r="1"/>
-                <circle cx="20" cy="21" r="1"/>
-                <path d="m1 1 4 4h15l-1 5H6"/>
-              </svg>
-              Proceed to Checkout
+        <div className="glass-pane animate-fade-in" style={{ textAlign: 'center' }}>
+          <div className="empty-modern">
+            <div className="empty-icon">🛒</div>
+            <h2 style={{ color: 'var(--text)', marginBottom: '1rem' }}>Your cart is empty</h2>
+            <p className="muted" style={{ marginBottom: '2rem' }}>Add some delicious treats to get started!</p>
+            <Link to="/products" className="checkout-btn" style={{ maxWidth: '250px', margin: '0 auto' }}>
+              Browse Products
             </Link>
           </div>
-        </>
+        </div>
+      ) : (
+        <div className="glass-pane animate-fade-in">
+          <div className="cart-layout">
+            <div className="cart-items-list">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Items ({validCart.length})</h2>
+                <button onClick={clearCart} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
+                  Clear All
+                </button>
+              </div>
+              
+              {validCart.map((item, index) => (
+                <div 
+                  key={`cart-item-${item.product.id}`} 
+                  className={`modern-cart-item ${animatingItems.has(item.product.id) ? 'removing' : ''}`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="item-img-wrapper">
+                    <img 
+                      src={item.product.images && item.product.images[0] ? item.product.images[0] : '/images/placeholder.jpg'} 
+                      alt={item.product.name} 
+                      onError={(e)=>{ e.currentTarget.onerror=null; e.currentTarget.src='/images/placeholder.jpg';}} 
+                    />
+                  </div>
+                  
+                  <div className="item-info">
+                    <h3>{item.product.name}</h3>
+                    <div className="price-tag">₹{item.product.price}</div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginTop: '4px' }}>
+                      Subtotal: ₹{(item.product.price * item.qty).toFixed(2)}
+                    </div>
+                  </div>
+                  
+                  <div className="cart-item-actions">
+                    <div className="qty-pill">
+                      <button 
+                        className="qty-pill-btn" 
+                        onClick={() => handleQtyChange(item.product.id, item.qty - 1)} 
+                        disabled={item.qty <= 1}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14"/></svg>
+                      </button>
+                      <span className="qty-pill-val">{item.qty}</span>
+                      <button 
+                        className="qty-pill-btn" 
+                        onClick={() => handleQtyChange(item.product.id, item.qty + 1)}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M5 12h14"/></svg>
+                      </button>
+                    </div>
+                    
+                    <button className="remove-icon-btn" onClick={() => handleRemove(item.product.id)} title="Remove Item">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="cart-summary">
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem' }}>Order Summary</h2>
+              <div className="summary-row">
+                <span>Subtotal</span>
+                <span>₹{total.toFixed(2)}</span>
+              </div>
+              <div className="summary-row">
+                <span>Shipping</span>
+                <span style={{ color: 'var(--success)', fontWeight: 600 }}>FREE</span>
+              </div>
+              <div className="summary-row summary-total">
+                <span>Total</span>
+                <span>₹{total.toFixed(2)}</span>
+              </div>
+              
+              <Link to="/order-placement" className="checkout-btn" style={{ marginTop: '1.25rem' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+                Checkout Now
+              </Link>
+              
+              <p style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--muted)', marginTop: '1rem' }}>
+                Secure SSL Encrypted Checkout
+              </p>
+            </div>
+          </div>
+        </div>
       )}
-    </main>
+    </div>
   );
 }
 

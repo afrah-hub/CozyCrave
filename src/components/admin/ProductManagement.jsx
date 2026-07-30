@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
-
-const API_BASE = "http://localhost:3001";
+import { apiClient } from "../../services/api";
 
 function ProductManagement({ products, showToast, setProducts }) {
   const [showRecycle, setShowRecycle] = useState(false);
@@ -20,33 +19,46 @@ function ProductManagement({ products, showToast, setProducts }) {
     isActive: true,
   };
   const [form, setForm] = useState(defaultForm);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [errors, setErrors] = useState({});
 
   const openAdd = () => {
     setEditingProduct(null);
     setForm(defaultForm);
+    setSelectedFile(null);
     setErrors({});
     setShowModal(true);
   };
 
-  const openEdit = (p) => {
-    setEditingProduct(p);
-    setForm({
-      name: p.name || "",
-      description: p.description || "",
-      price: p.price ?? "",
-      count: p.count ?? "",
-      category: p.category || "",
-      images: p.images && p.images.length ? p.images : [""],
-      isActive: p.isActive ?? true,
-    });
-    setErrors({});
-    setShowModal(true);
+  const openEdit = async (p) => {
+    try {
+      // Fetch full product details since the admin list API lacks some fields (like Description)
+      const res = await apiClient.get(`/api/Product/${p.id}`);
+      const fullP = res.data?.data ?? res.data;
+
+      setEditingProduct(fullP);
+      setForm({
+        name: fullP.name || fullP.Name || "",
+        description: fullP.description || fullP.Description || "",
+        price: fullP.price ?? fullP.Price ?? "",
+        count: fullP.count ?? fullP.Count ?? "",
+        category: fullP.category || fullP.Category || "",
+        images: (fullP.images && fullP.images.length) ? fullP.images : (fullP.Images && fullP.Images.length) ? fullP.Images : [""],
+        isActive: fullP.isActive ?? fullP.IsActive ?? true,
+      });
+      setSelectedFile(null);
+      setErrors({});
+      setShowModal(true);
+    } catch (err) {
+      console.error("Error fetching product details", err);
+      showToast("Failed to load product details", "error");
+    }
   };
 
   const closeModal = () => {
     setShowModal(false);
     setEditingProduct(null);
+    setSelectedFile(null);
     setErrors({});
   };
 
@@ -66,20 +78,37 @@ function ProductManagement({ products, showToast, setProducts }) {
     if (!validateForm()) return;
     setSaving(true);
     try {
-      const payload = {
-        ...form,
-        price: Number(form.price),
-        count: Number(form.count),
-        updated_at: new Date().toISOString(),
-      };
       if (editingProduct) {
-        await axios.patch(`${API_BASE}/products/${editingProduct.id}`, payload);
-        setProducts((prev) => prev.map((p) => (p.id === editingProduct.id ? { ...p, ...payload } : p)));
+        // Update uses [FromBody] JSON
+        const payload = {
+          name: form.name,
+          description: form.description,
+          price: Number(form.price),
+          count: Number(form.count),
+          category: form.category
+        };
+        await apiClient.put(`/api/Product/${editingProduct.id}`, payload);
+
+        // Refresh products to get latest state
+        const res = await apiClient.get(`/api/Product/admin`);
+        setProducts(res.data?.data || []);
         showToast("Product updated", "success");
       } else {
-        payload.created_at = new Date().toISOString();
-        const res = await axios.post(`${API_BASE}/products`, payload);
-        setProducts((prev) => [...prev, res.data]);
+        // Create uses [FromForm] multipart/form-data
+        const formData = new FormData();
+        formData.append("Name", form.name);
+        formData.append("Description", form.description);
+        formData.append("Price", form.price);
+        formData.append("Count", form.count);
+        formData.append("Category", form.category);
+        if (selectedFile) {
+          formData.append("Files", selectedFile);
+        }
+
+        const res = await apiClient.post(`/api/Product`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        setProducts((prev) => [...prev, res.data?.data ?? res.data]);
         showToast("Product created", "success");
       }
       closeModal();
@@ -91,41 +120,19 @@ function ProductManagement({ products, showToast, setProducts }) {
     }
   };
 
-  const softDeleteProduct = async (id) => {
+  const deleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to permanently delete this product?")) return;
     try {
-      await axios.patch(`${API_BASE}/products/${id}`, { isActive: false });
-      setProducts((p) => p.map((x) => (x.id === id ? { ...x, isActive: false } : x)));
-      showToast("Moved to recycle bin");
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to delete", "error");
-    }
-  };
-
-  const restoreProduct = async (id) => {
-    try {
-      await axios.patch(`${API_BASE}/products/${id}`, { isActive: true });
-      setProducts((p) => p.map((x) => (x.id === id ? { ...x, isActive: true } : x)));
-      showToast("Restored product");
-    } catch (err) {
-      console.error(err);
-      showToast("Restore failed", "error");
-    }
-  };
-
-  const hardDeleteProduct = async (id) => {
-    try {
-      await axios.delete(`${API_BASE}/products/${id}`);
+      await apiClient.delete(`/api/Product/${id}`);
       setProducts((p) => p.filter((x) => x.id !== id));
-      showToast("Permanently deleted", "success");
+      showToast("Product permanently deleted", "success");
     } catch (err) {
       console.error(err);
       showToast("Delete failed", "error");
     }
   };
 
-  const filteredProducts = products
-    .filter((p) => (showRecycle ? !p.isActive : p.isActive));
+  const filteredProducts = products;
 
   React.useEffect(() => {
     if (!showModal) return;
@@ -143,23 +150,11 @@ function ProductManagement({ products, showToast, setProducts }) {
     <>
       <section className="page-section">
         <div className="section-head">
-
           <div>
             <h1 className="section-title">Product Catalog</h1>
           </div>
-
           <div className="controls">
-            <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <button className="btn outline" onClick={() => setShowRecycle((s) => !s)} aria-pressed={showRecycle}>
-                  {showRecycle ? "Hide Recycle" : "Recycle Bin"}
-                </button>
-              </div>
-
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <button className="btn btn-brand" onClick={openAdd}>Add Product</button>
-              </div>
-            </div>
+            <button className="btn btn-brand" onClick={openAdd}>Add Product</button>
           </div>
         </div>
 
@@ -172,7 +167,6 @@ function ProductManagement({ products, showToast, setProducts }) {
                   <th>Category</th>
                   <th>Price</th>
                   <th>Stock</th>
-                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -181,42 +175,30 @@ function ProductManagement({ products, showToast, setProducts }) {
                   <tr key={p.id}>
                     <td className="product-cell">
                       <img
-                        src={(p.images && p.images[0]) || "/images/placeholder.jpg"}
-                        alt={p.name}
+                        src={p.primaryImageUrl || p.PrimaryImageUrl || (p.images && p.images[0]) || (p.Images && p.Images[0]) || "/images/placeholder.jpg"}
+                        alt={p.name || p.Name}
                         className="thumb"
                         onError={(e) => (e.currentTarget.src = "/images/placeholder.jpg")}
                       />
                       <div>
-                        <div className="strong">{p.name}</div>
-                        <div className="muted small">{p.description?.slice(0, 80)}</div>
+                        <div className="strong">{p.name || p.Name}</div>
+                        <div className="muted small">{(p.description || p.Description)?.slice(0, 80)}</div>
                       </div>
                     </td>
-                    <td>{p.category}</td>
-                    <td>₹{p.price}</td>
-                    <td>{p.count}</td>
-                    <td>
-                      <span className={`badge-status ${p.isActive ? "active" : "inactive"}`}>{p.isActive ? "Active" : "Inactive"}</span>
-                    </td>
+                    <td>{p.category || p.Category}</td>
+                    <td>₹{p.price || p.Price}</td>
+                    <td>{p.count || p.Count}</td>
                     <td>
                       <div className="row-actions">
-                        {p.isActive ? (
-                          <>
-                            <button className="btn small" onClick={() => openEdit(p)}>Edit</button>
-                            <button className="btn small danger" onClick={() => softDeleteProduct(p.id)}>Delete</button>
-                          </>
-                        ) : (
-                          <>
-                            <button className="btn small success" onClick={() => restoreProduct(p.id)}>Restore</button>
-                            <button className="btn small danger" onClick={() => hardDeleteProduct(p.id)}>Delete Permanently</button>
-                          </>
-                        )}
+                        <button className="btn small" onClick={() => openEdit(p)}>Edit</button>
+                        <button className="btn small danger" onClick={() => deleteProduct(p.id)}>Delete</button>
                       </div>
                     </td>
                   </tr>
                 ))}
                 {filteredProducts.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="center muted">No products found</td>
+                    <td colSpan="5" className="center muted">No products found</td>
                   </tr>
                 )}
               </tbody>
@@ -245,7 +227,7 @@ function ProductManagement({ products, showToast, setProducts }) {
                   <div className="label">Category</div>
                   <select className="input" value={form.category} onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))}>
                     <option value="">Choose</option>
-                    <option>Premium</option>
+                    <option>Chocolate</option>
                     <option>Sweets</option>
                     <option>Nuts</option>
                   </select>
@@ -278,12 +260,16 @@ function ProductManagement({ products, showToast, setProducts }) {
                     onChange={(e) => {
                       const f = e.target.files?.[0];
                       if (!f) return;
-                      const path = `/images/${f.name}`;
-                      setForm((s) => ({ ...s, images: [path] }));
+                      setSelectedFile(f);
                     }}
-                    className="input"/>
-                  {form.images && form.images[0] && (
-                    <img src={form.images[0]} alt="preview" className="thumb-preview" onError={(ev) => (ev.currentTarget.src = "/images/placeholder.jpg")} />
+                    className="input" />
+                  {(selectedFile || (editingProduct && (editingProduct.primaryImageUrl || editingProduct.PrimaryImageUrl))) && (
+                    <img
+                      src={selectedFile ? URL.createObjectURL(selectedFile) : (editingProduct.primaryImageUrl || editingProduct.PrimaryImageUrl)}
+                      alt="preview"
+                      className="thumb-preview"
+                      onError={(ev) => (ev.currentTarget.src = "/images/placeholder.jpg")}
+                    />
                   )}
                   {errors.images && <div className="form-error">{errors.images}</div>}
                 </label>

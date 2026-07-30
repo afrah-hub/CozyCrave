@@ -1,0 +1,7 @@
+{
+  "regStatus": 400,
+  "loginStatus": 401,
+  "loginBody": "Invalid email or password.",
+  "error": "SyntaxError: Unexpected token 'I', \"Invalid em\"... is not valid JSON",
+  "stack": "SyntaxError: Unexpected token 'I', \"Invalid em\"... is not valid JSON\n    at JSON.parse (<anonymous>)\n    at test (C:\\Users\\afrah\\Documents\\CozyCrave\\api-test2.cjs:28:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+}

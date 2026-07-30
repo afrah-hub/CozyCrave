@@ -1,50 +1,114 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { registerUser } from "../services/api";
+import Cookies from "js-cookie";
+import { 
+  registerUser, loginUser, getProfile, updateProfileApi,
+  fetchCartApi, addToCartApi, updateCartItemApi, removeFromCartApi,
+  fetchWishlistApi, addToWishlistApi, removeFromWishlistApi,
+  createOrderApi, confirmPaymentApi, fetchMyOrdersApi, cancelOrderApi
+} from "../services/api";
 import { AppContext } from "./AppContext";
-const API_BASE = "http://localhost:3001";
 export function AppProvider({ children }) {
-  const [user, setUser] = useState(null); 
-  const [cart, setCart] = useState([]); 
-  const [wishlist, setWishlist] = useState([]); 
+  const [user, setUser] = useState(() => {
+    const userStr = Cookies.get("cc_user");
+    if (userStr && userStr !== "null") {
+      try {
+        const sUser = JSON.parse(userStr);
+        if (sUser && typeof sUser === 'object') return sUser;
+      } catch (e) { console.warn("Error parsing user cookie", e); }
+    }
+    return null;
+  });
+
+  const [cart, setCart] = useState(() => {
+    try {
+      const cartStr = localStorage.getItem("cc_cart");
+      return cartStr ? JSON.parse(cartStr) : [];
+    } catch (e) { return []; }
+  });
+
+  const [wishlist, setWishlist] = useState(() => {
+    try {
+      const wishStr = localStorage.getItem("cc_wishlist");
+      return wishStr ? JSON.parse(wishStr) : [];
+    } catch (e) { return []; }
+  });
+  const [orders, setOrders] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true); 
   useEffect(() => {
-    try {
-      const userStr = localStorage.getItem("cc_user");
-      const cartStr = localStorage.getItem("cc_cart");
-      const wishStr = localStorage.getItem("cc_wishlist");
-      if (userStr && userStr !== "null") {
-        const sUser = JSON.parse(userStr);
-        if (sUser && typeof sUser === 'object') {
-          setUser(sUser);
+    // Sync with server on mount if logged in
+    const syncWithServer = async () => {
+      const token = Cookies.get("cc_token");
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // Fetch profile and other data in parallel
+        const [profile, cartData, wishData, ordersData] = await Promise.allSettled([
+          getProfile(token),
+          fetchCartApi(),
+          fetchWishlistApi(),
+          fetchMyOrdersApi()
+        ]);
+
+        if (profile.status === 'fulfilled') {
+          setUser(profile.value);
         }
+
+        if (cartData.status === 'fulfilled') {
+          const serverCart = cartData.value.map(c => ({
+            id: c.id,
+            product: { ...c.product, images: c.product.primaryImageUrl ? [c.product.primaryImageUrl] : [] },
+            qty: c.quantity
+          }));
+          // Merge local and server cart
+          setCart(prev => mergeCarts(prev, serverCart));
+        }
+
+        if (wishData.status === 'fulfilled') {
+          const serverWish = wishData.value.map(w => ({
+            ...w.product,
+            images: w.product.primaryImageUrl ? [w.product.primaryImageUrl] : [],
+            wishlistItemId: w.id
+          }));
+          setWishlist(prev => mergeWishlists(prev, serverWish));
+        }
+
+        if (ordersData.status === 'fulfilled') {
+          const mappedOrders = (ordersData.value || []).map(o => ({
+            id: o.id,
+            date: o.createdAt,
+            total: o.total,
+            status: o.status,
+            items: (o.items || []).map(i => ({
+              id: i.id,
+              name: i.product?.name || i.product?.Name || "Product",
+              price: i.price,
+              qty: i.quantity,
+              image: i.product?.primaryImageUrl || (i.product?.images && i.product?.images[0])
+            }))
+          }));
+          setOrders(mappedOrders);
+        }
+
+      } catch (error) {
+        console.warn('Error during server sync:', error);
+      } finally {
+        setIsLoading(false);
       }
-      if (cartStr) {
-        const sCart = JSON.parse(cartStr);
-        setCart(Array.isArray(sCart) ? sCart : []);
-      }
-      
-      if (wishStr) {
-        const sWish = JSON.parse(wishStr);
-        setWishlist(Array.isArray(sWish) ? sWish : []);
-      }
-    } catch (error) {
-      console.warn('Error parsing localStorage data:', error);
-    
-      localStorage.removeItem("cc_user");
-      localStorage.removeItem("cc_cart");
-      localStorage.removeItem("cc_wishlist");
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    syncWithServer();
   }, []);
 
   useEffect(() => {
     if (user) {
-      localStorage.setItem("cc_user", JSON.stringify(user));
+      Cookies.set("cc_user", JSON.stringify(user), { expires: 7, sameSite: 'strict' });
     } else {
-      localStorage.removeItem("cc_user");
+      Cookies.remove("cc_user");
     }
   }, [user]);
 
@@ -59,24 +123,26 @@ export function AppProvider({ children }) {
   async function patchUserOnServer(userId, patch) {
     if (!userId) return;
     try {
-      const res = await axios.patch(`${API_BASE}/users/${userId}`, patch);
-      setUser(res.data);
-      localStorage.setItem("cc_user", JSON.stringify(res.data));
-      return res.data;
+      if (patch.name) {
+        await updateProfileApi(patch.name);
+        const updatedUser = { ...user, name: patch.name };
+        setUser(updatedUser);
+        Cookies.set("cc_user", JSON.stringify(updatedUser), { expires: 7, sameSite: 'strict' });
+      }
+      return { ok: true };
     } catch (error) {
       console.warn("Failed to patch user on server", error);
-      return null;
+      return { ok: false, message: error.response?.data || "Update failed" };
     }
   }
   function mergeCarts(localCart, serverCart) {
     const merged = [...serverCart];
     localCart.forEach(localItem => {
-      const existing = merged.find(m => m.product.id === localItem.product.id);
-      if (existing) {
-        existing.qty += localItem.qty;
-      } else {
+      const existing = merged.find(m => String(m.product.id) === String(localItem.product.id));
+      if (!existing) {
         merged.push(localItem);
       }
+      // If item already exists on server, we keep the server version
     });
     return merged;
   }
@@ -89,123 +155,108 @@ export function AppProvider({ children }) {
     });
     return merged;
   }
-  function mergeOrders(localOrders, serverOrders) {
-    const merged = [...serverOrders];
-    localOrders.forEach(order => {
-      const exists = merged.find(m =>
-        m.date === order.date && m.total === order.total
-      );
-      if (!exists) {
-        merged.push(order);
-      }
-    });
-    return merged;
-  }
   const login = async ({ identifier, password }) => {
-    const norm = (v) => (v || "").trim().toLowerCase();
-    const idNorm = norm(identifier);
-
     try {
-      const res = await axios.get(`${API_BASE}/users`);
-      const allUsers = res.data || [];
-      const found = allUsers.find((u) => {
-        const email = norm(u.email);
-        const username = norm(u.username);
-        const nameAsUsername = norm(u.name);
-        return idNorm === email || idNorm === username || idNorm === nameAsUsername;
-      });
-      if (!found) {
-        return { ok: false, message: "Invalid credentials" };
-      }
-      if (found.isBlock) {
-        return { ok: false, message: "Account is blocked" };
-      }
-      if (String(found.password) !== String(password)) {
-        return { ok: false, message: "Invalid credentials" };
-      }
-
+      const res = await loginUser(identifier, password);
+      Cookies.set("cc_token", res.token, { expires: 7, sameSite: 'strict' });
+      
+      const profile = await getProfile(res.token);
+      
       const localCart = JSON.parse(localStorage.getItem("cc_cart")) || [];
       const localWish = JSON.parse(localStorage.getItem("cc_wishlist")) || [];
-      const serverCart = (found.cart || []).map((entry) => normalizeCartEntry(entry));
-      const serverWish = found.wishlist || [];
-      const serverOrders = found.orders || [];
+      
+      let serverCart = [];
+      let serverWish = [];
+      try {
+        const cartData = await fetchCartApi();
+        serverCart = cartData.map(c => ({
+          id: c.id,
+          product: { ...c.product, images: c.product.primaryImageUrl ? [c.product.primaryImageUrl] : [] },
+          qty: c.quantity
+        }));
+
+        const wishData = await fetchWishlistApi();
+        serverWish = wishData.map(w => ({
+          ...w.product,
+          images: w.product.primaryImageUrl ? [w.product.primaryImageUrl] : [],
+          wishlistItemId: w.id
+        }));
+      } catch (e) {
+        console.warn("Failed to fetch server cart/wishlist", e);
+      }
+      
+      let serverOrders = [];
+      
       const mergedCart = mergeCarts(localCart, serverCart);
       const mergedWish = mergeWishlists(localWish, serverWish);
-      const mergedOrders = mergeOrders(found.orders || [], serverOrders);
 
       setCart(mergedCart);
       setWishlist(mergedWish);
-      const updatedUser = { ...found, orders: mergedOrders };
-      setUser(updatedUser);
-      localStorage.setItem("cc_cart", JSON.stringify(mergedCart));
+      setUser(profile);
       localStorage.setItem("cc_wishlist", JSON.stringify(mergedWish));
-      localStorage.setItem("cc_user", JSON.stringify(updatedUser));
+      Cookies.set("cc_user", JSON.stringify(profile), { expires: 7, sameSite: 'strict' });
+      
+      try {
+        const ordersData = await fetchMyOrdersApi();
+        const mappedOrders = (ordersData || []).map(o => ({
+          id: o.id,
+          date: o.createdAt,
+          total: o.total,
+          status: o.status,
+          items: (o.items || []).map(i => ({
+            id: i.id,
+            name: i.product?.name || i.product?.Name || "Product",
+            price: i.price,
+            qty: i.quantity,
+            image: i.product?.primaryImageUrl || (i.product?.images && i.product?.images[0])
+          }))
+        }));
+        setOrders(mappedOrders);
+      } catch (e) {
+        console.warn("Failed to fetch server orders", e);
+      }
+
       return { ok: true };
     } catch (err) {
-      console.warn("Server auth fallback due to error:", err?.message || err);
+      console.warn("Server auth failed:", err?.response?.data || err?.message || err);
+      const errData = err?.response?.data;
+      // Backend wraps errors in ApiResponse: { success, message, ... }
+      const errMsg = errData?.message
+        || (typeof errData === 'string' ? errData : null)
+        || err?.message
+        || "Invalid credentials";
+      return { ok: false, message: errMsg };
     }
-
-    const localUsers = JSON.parse(localStorage.getItem("cc_users")) || [
-      { username: "demo", password: "demo123", id: "local-demo" },
-    ];
-    const foundLocal = localUsers.find((u) => {
-      const email = norm(u.email);
-      const username = norm(u.username);
-      const nameAsUsername = norm(u.name);
-      return idNorm === email || idNorm === username || idNorm === nameAsUsername;
-    });
-    if (foundLocal && String(foundLocal.password) === String(password)) {
-      setUser(foundLocal);
-      setCart(JSON.parse(localStorage.getItem("cc_cart")) || []);
-      setWishlist(JSON.parse(localStorage.getItem("cc_wishlist")) || []);
-      return { ok: true };
-    }
-    return { ok: false, message: "Invalid credentials" };
   };
 
   const register = async ({ username, password, email }) => {
     try {
-      const user = await registerUser({ username, password, email });
-      setUser(user);
-      setCart([]);
-
-      return { ok: true, user };
-    } catch {
-      // server unavailable, fallback next
-    }    const users = JSON.parse(localStorage.getItem("cc_users")) || [
-      { username: "demo", password: "demo123", id: "local-demo" },
-    ];
-    if (users.find((u) => u.username === username)) {
-      return { ok: false, message: "Username already exists" };
+      await registerUser({ username, password, email });
+      return { ok: true };
+    } catch (err) {
+      const msg = err?.response?.data || "Username or email already exists";
+      return { ok: false, message: typeof msg === 'string' ? msg : JSON.stringify(msg) };
     }
-    const newUser = { id: `local-${Date.now()}`, username, password, email: email || "", role: "user", isBlock: false, cart: [], wishlist: [], orders: [], created_at: new Date().toISOString() };
-    users.push(newUser);
-    localStorage.setItem("cc_users", JSON.stringify(users));
-    setUser(newUser);
-    setCart([]);
-    setWishlist([]);
-    return { ok: true, user: newUser };
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("cc_user");
+    Cookies.remove("cc_user");
+    Cookies.remove("cc_token");
+    try {
+        axios.post('/api/Auth/logout', {}, { withCredentials: true });
+    } catch (e) {}
   };
 
   const updateUser = async (updates) => {
     if (!user) return;
     if (user.id) {
-      await patchUserOnServer(user.id, updates);
+      return await patchUserOnServer(user.id, updates);
     } else {
       const updated = { ...user, ...updates };
       setUser(updated);
-      localStorage.setItem("cc_user", JSON.stringify(updated));
-      const users = JSON.parse(localStorage.getItem("cc_users")) || [];
-      const idx = users.findIndex((u) => u.id === user.id);
-      if (idx >= 0) {
-        users[idx] = updated;
-        localStorage.setItem("cc_users", JSON.stringify(users));
-      }
+      Cookies.set("cc_user", JSON.stringify(updated), { expires: 7, sameSite: 'strict' });
+      return { ok: true };
     }
   };
 
@@ -220,148 +271,140 @@ export function AppProvider({ children }) {
     return { product: entry, qty: 1 };
   }
   const addToCart = async (product, qty = 1) => {
+    // Optimistic UI update
     setCart((prev) => {
       const found = prev.find((p) => String(p.product.id) === String(product.id));
       if (found) return prev.map((p) => (String(p.product.id) === String(product.id) ? { ...p, qty: p.qty + qty } : p));
       return [...prev, { product, qty }];
     });
+
     if (user && user.id) {
       try {
-        const res = await axios.get(`${API_BASE}/users/${user.id}`);
-        const userData = res.data;
-        const currentCart = userData.cart || [];
-        let merged = [...currentCart];
-        const idx = merged.findIndex((c) => {
-          if (!c) return false;
-          if (c.product && c.product.id) return String(c.product.id) === String(product.id);
-          if (c.productId) return String(c.productId) === String(product.id);
-          return false;
-        });
-        if (idx >= 0) {
-          const existing = merged[idx];
-          const existingQty = existing.qty || 1;
-          merged[idx] = { ...existing, product: product, qty: existingQty + qty };
-        } else {
-          merged.push({ product, qty });
-        }
-        await patchUserOnServer(user.id, { cart: merged });
+        const res = await addToCartApi(product.id, qty);
+        // Sync generated ID back if needed
+        setCart((prev) => prev.map((p) => String(p.product.id) === String(product.id) ? { ...p, id: res.id, qty: res.quantity } : p));
       } catch (error) {
-        console.warn("Failed to sync cart to server:", error);
+        console.warn("Failed to add to cart on server:", error);
       }
     }
   };
   const updateCartQty = async (productId, qty) => {
+    // Optimistic UI update
     setCart((prev) => prev.map((p) => (String(p.product.id) === String(productId) ? { ...p, qty } : p)).filter((p) => p.qty > 0));
+
     if (user && user.id) {
       try {
-        const res = await axios.get(`${API_BASE}/users/${user.id}`);
-        const userData = res.data;
-        const currentCart = userData.cart || [];
-        const merged = currentCart.map((c) => {
-          const pid = c.product?.id || c.productId;
-          if (String(pid) === String(productId)) {
-            return { ...c, product: c.product || {}, qty };
-          }
-          return c;
-        }).filter((c) => (c.qty || 0) > 0);
-        await patchUserOnServer(user.id, { cart: merged });
+        const cartItem = cart.find(c => String(c.product?.id) === String(productId) || String(c.productId) === String(productId));
+        if (cartItem && cartItem.id) {
+           await updateCartItemApi(cartItem.id, qty);
+        }
       } catch (error) {
-        console.warn("Failed to sync cart update to server:", error);
+        console.warn("Failed to update cart qty on server:", error);
       }
     }
   };
   const removeFromCart = async (productId) => {
+    // Optimistic UI update
     setCart((prev) => prev.filter((p) => String(p.product.id) !== String(productId)));
 
     if (user && user.id) {
       try {
-        const res = await axios.get(`${API_BASE}/users/${user.id}`);
-        const u = res.data;
-        const currentCart = u.cart || [];
-        const merged = currentCart.filter((c) => {
-          const pid = c.product?.id || c.productId;
-          return String(pid) !== String(productId);
-        });
-        await patchUserOnServer(user.id, { cart: merged });
+        const cartItem = cart.find(c => String(c.product?.id) === String(productId) || String(c.productId) === String(productId));
+        if (cartItem && cartItem.id) {
+           await removeFromCartApi(cartItem.id);
+        }
       } catch (error) {
-        console.warn("Failed to sync cart removal to server:", error);
+        console.warn("Failed to remove from cart on server:", error);
       }
     }
   };
   const addToWishlist = async (product) => {
+    // Optimistic UI update
     setWishlist((prev) => {
-      if (prev.find((p) => p.id === product.id)) return prev;
-      return [...prev, product];
+        if (prev.find((p) => p.id === product.id)) return prev;
+        return [...prev, product];
     });
+
     if (user && user.id) {
       try {
-        const res = await axios.get(`${API_BASE}/users/${user.id}`);
-        const u = res.data;
-        const currentWish = u.wishlist || [];
-        if (!currentWish.find((p) => (p.id || p.productId) === product.id)) {
-          const merged = [...currentWish, product];
-          await patchUserOnServer(user.id, { wishlist: merged });
-        }
+        const res = await addToWishlistApi(product.id);
+        // Sync generated ID back if needed
+        setWishlist((prev) => prev.map(p => String(p.id) === String(product.id) ? { ...p, wishlistItemId: res.id } : p));
       } catch (error) {
-        console.warn("Failed to sync wishlist to server:", error);
+        console.warn("Failed to add to wishlist on server:", error);
       }
     }
   };
 
   const removeFromWishlist = async (productId) => {
-    setWishlist((prev) => prev.filter((p) => p.id !== productId));
+    // Optimistic UI update
+    setWishlist((prev) => prev.filter((p) => String(p.id) !== String(productId)));
+
     if (user && user.id) {
       try {
-        const res = await axios.get(`${API_BASE}/users/${user.id}`);
-        const u = res.data;
-        const currentWish = u.wishlist || [];
-        const merged = currentWish.filter((p) => (p.id || p.productId) !== productId);
-        await patchUserOnServer(user.id, { wishlist: merged });
+        const item = wishlist.find((p) => String(p.id) === String(productId));
+        if (item && item.wishlistItemId) {
+          await removeFromWishlistApi(item.wishlistItemId);
+        }
       } catch (error) {
-        console.warn("Failed to sync wishlist removal to server:", error);
+        console.warn("Failed to remove from wishlist on server:", error);
       }
     }
   };
-  const checkout = async (address = null) => {
+  const checkout = async (addressData) => {
     if (!user) {
       addNotification("Please login to place an order", "error");
-      return;
+      throw new Error("No user");
     }
     if (cart.length === 0) {
       addNotification("Your cart is empty", "warning");
-      return;
-    }
-    const total = cart.reduce((s, i) => s + i.product.price * i.qty, 0);
-    const order = {
-      date: new Date().toISOString(),
-      total: total.toFixed(2),
-      status: "success",
-      items: cart.map(item => ({
-        id: item.product.id,
-        name: item.product.name,
-        price: item.product.price,
-        qty: item.qty
-      }))
-    };
-
-  const updatedOrders = [...(user.orders || []), order];
-  const updatedUser = { ...user, orders: updatedOrders, address: address || user.address || null };
-    setUser(updatedUser);
-    localStorage.setItem("cc_user", JSON.stringify(updatedUser));
-
-    setCart([]);
-    localStorage.setItem("cc_cart", JSON.stringify([]));
-
-    if (user.id) {
-      try {
-        const patch = { orders: updatedOrders, cart: [], ...(address ? { address } : {}) };
-        await patchUserOnServer(user.id, patch);
-      } catch (err) {
-        console.warn("Failed to sync order to server:", err);
-      }
+      throw new Error("Cart empty");
     }
 
-    addNotification("Order placed successfully! Cash on Delivery.", "success");
+    try {
+      // Create order and get Stripe clientSecret
+      const data = await createOrderApi(addressData);
+      
+      // CRITICAL: We do NOT clear the cart state here.
+      // The user wants to see their items and total during the payment process.
+      // cart state remains untouched until confirmOrderPayment is called.
+      return data; 
+    } catch (err) {
+      console.warn("Failed to create order:", err?.response?.data || err.message);
+      addNotification("Failed to initiate order. Please try again.", "error");
+      throw err;
+    }
+  };
+
+  const confirmOrderPayment = async (orderId, paymentIntentId) => {
+    try {
+      const updatedOrder = await confirmPaymentApi(orderId, paymentIntentId);
+      const mappedOrder = {
+        id: updatedOrder.id,
+        date: updatedOrder.createdAt,
+        total: updatedOrder.total,
+        status: updatedOrder.status,
+        items: (updatedOrder.items || []).map(i => ({
+          id: i.id,
+          name: i.product?.name || i.product?.Name || "Product",
+          price: i.price,
+          qty: i.quantity,
+          image: i.product?.primaryImageUrl || (i.product?.images && i.product?.images[0])
+        }))
+      };
+      setOrders(prev => [mappedOrder, ...prev]);
+      
+      // Clear cart ONLY after successful payment confirmation from server
+      setCart([]);
+      localStorage.setItem("cc_cart", JSON.stringify([]));
+      
+      addNotification("Payment successful! Order confirmed.", "success");
+      return updatedOrder;
+    } catch (err) {
+      console.warn("Payment confirmation failed:", err);
+      addNotification("Payment confirmation failed. Please contact support.", "error");
+      throw err;
+    }
   };
   
   const addNotification = (message, type = 'info') => {
@@ -373,22 +416,24 @@ export function AppProvider({ children }) {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   }; 
 
-const removeOrder = async (orderIndex) => {
-    if (!user) return;
-    const updatedOrders = (user.orders || []).filter((_, index) => index !== orderIndex);
-    const updatedUser = { ...user, orders: updatedOrders };
-    setUser(updatedUser);
-    localStorage.setItem("cc_user", JSON.stringify(updatedUser));
-
-    if (user.id) {
-      try {
-        await patchUserOnServer(user.id, { orders: updatedOrders });
-      } catch (err) {
-        console.warn("Failed to sync order removal to server:", err);
-      }
+  const cancelOrder = async (orderId) => {
+    try {
+      const updatedOrder = await cancelOrderApi(orderId);
+      
+      // Update local state - only need to update the status 
+      // since the other fields (items, etc) shouldn't have changed
+      setOrders(prev => prev.map(o => 
+        o.id === orderId ? { ...o, status: updatedOrder.status } : o
+      ));
+      
+      addNotification(`Order #${orderId} was cancelled`, "success");
+      return updatedOrder;
+    } catch (err) {
+      console.error("Failed to cancel order:", err);
+      const errorMsg = err.response?.data || "Failed to cancel order";
+      addNotification(typeof errorMsg === 'string' ? errorMsg : "Cancellation failed", "error");
+      throw err;
     }
-
-    addNotification("Order removed successfully", "success");
   };
   return (
     <AppContext.Provider
@@ -405,13 +450,16 @@ const removeOrder = async (orderIndex) => {
         updateCartQty,
         removeFromCart,
         checkout,
+        confirmOrderPayment,
         wishlist,
         addToWishlist,
         removeFromWishlist,
+        orders,
+        setOrders,
         notifications,
         addNotification,
         removeNotification,
-        removeOrder,
+        cancelOrder,
       }} > {children} </AppContext.Provider>
   );
 }

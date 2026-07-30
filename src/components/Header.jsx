@@ -1,13 +1,14 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
-import brandLogo from "/images/placeholder1.png";
 import { fetchProducts } from "../services/api";
+import LogoutConfirmModal from './LogoutConfirmModal';
 function Header() {
   const { user, logout, cart, wishlist, addToCart } = useContext(AppContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -18,7 +19,7 @@ function Header() {
   const resultsRef = useRef(null);
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10); 
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -39,7 +40,7 @@ function Header() {
       const filtered = allProducts.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 6); 
+      ).slice(0, 6);
       setSearchResults(filtered);
       setShowDropdown(true);
       setSelectedIndex(-1);
@@ -125,7 +126,7 @@ function Header() {
       <div className="container">
         <div className="header-inner">
           <Link to="/" className="brand" onClick={closeMenu} aria-label="Home">
-            <img src={brandLogo} alt="Cozy Crave Logo" className="brand-logo" />
+            <img src="/images/placeholder1.png" alt="Cozy Crave Logo" className="brand-logo" />
             <span className="brand-text">Cozy Crave</span>
           </Link>
 
@@ -228,7 +229,7 @@ function Header() {
                     <button className="user-btn" onClick={toggleUserDropdown} aria-haspopup="true" aria-expanded={isUserDropdownOpen}>
                       <div className="user-avatar">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                         </svg>
                       </div>
                       <span className="user-name">{user.username || user.name || "User"}</span>
@@ -241,17 +242,19 @@ function Header() {
                         <li><button
                           className="dropdown-item"
                           onClick={() => {
-                            if (user && user.role === 'admin') {
+                            if (user?.role?.toLowerCase() === 'admin') {
                               navigate('/admin');
                             } else {
                               navigate('/profile');
                             }
                             closeMenu();
                           }}
-                        >Profile</button></li>
+                        >
+                          {user?.role?.toLowerCase() === 'admin' ? 'Admin' : 'Profile'}
+                        </button></li>
                         <li><Link to="/orders" onClick={closeMenu} className="dropdown-item">Orders</Link></li>
 
-                        <li><button className="dropdown-item logout-btn" onClick={() => { logout(); closeMenu(); }}>Logout</button></li>
+                        <li><button className="dropdown-item logout-btn" onClick={() => { setShowLogoutModal(true); setIsUserDropdownOpen(false); }}>Logout</button></li>
                       </ul>
                     )}
                   </li>
@@ -269,6 +272,15 @@ function Header() {
           </button>
         </div>
       </div>
+      <LogoutConfirmModal 
+        isOpen={showLogoutModal} 
+        onConfirm={() => {
+          logout();
+          setShowLogoutModal(false);
+          setIsMenuOpen(false);
+        }} 
+        onCancel={() => setShowLogoutModal(false)} 
+      />
     </header>
   );
 }
